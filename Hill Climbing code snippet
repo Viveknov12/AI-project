@@ -1,0 +1,44 @@
+# Define the graph representing room connections
+graph = {
+    'entrance': ['kitchen'],
+    'kitchen': ['living_room', 'bedroom'],
+    'living_room': ['bathroom'],
+    'bedroom': ['office'],
+    'bathroom': [],
+    'office': []
+}
+
+# Heuristic function for A*
+heuristic = {
+    'entrance': 5,
+    'kitchen': 4,
+    'living_room': 3,
+    'bedroom': 2,
+    'bathroom': 1,
+    'office': 0
+}
+
+def hill_climbing(start, sensors):
+    current_room = start
+    path = []
+
+    while True:
+        path.append(current_room)
+        if current_room in sensors:
+            print(f"Hill Climbing: Sensor triggered in {current_room}, path taken: {path}")
+            return
+
+        neighbors = graph.get(current_room, [])
+        next_room = min(neighbors, key=lambda x: heuristic[x])
+        if heuristic[next_room] >= heuristic[current_room]:
+            print(f"Hill Climbing: Local maximum reached at {current_room}, path taken: {path}")
+            return
+        current_room = next_room
+
+# Triggered sensors
+triggered_sensors = ['bathroom', 'office']
+
+# Start hill climbing from the entrance
+start_room = 'entrance'
+print(f"Starting Hill Climbing from {start_room}:")
+hill_climbing(start_room, triggered_sensors)
