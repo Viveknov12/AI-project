@@ -49,7 +49,9 @@ def dfs(room, sensors, visited, path):
         if next_room not in visited:
             dfs(next_room, sensors, visited, path + [room])
 
+# Encapsulated A* search algorithm
 def astar(start, sensors):
+# Implementation of A* algorithm
     open_set = []
     closed_set = set()
     heapq.heappush(open_set, (heuristic[start], start, []))
@@ -71,6 +73,7 @@ def astar(start, sensors):
 def fitness_function(path, sensors):
     return len(set(path).intersection(sensors))
 
+# Encapsulated Particle Swarm Optimization algorithm
 def particle_swarm_optimization(rooms, sensors, swarm_size=10, iterations=5, inertia=0.5, cognitive_factor=1.5, social_factor=1.5):
     global_best_path = None
     global_best_fitness = float('-inf')
