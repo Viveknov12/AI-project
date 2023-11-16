@@ -1,0 +1,18 @@
+def dfs(room, sensors, visited, path):
+    if room in sensors:
+        print(f"Sensor triggered in {room}, path taken: {path + [room]}")
+    
+    visited.add(room)
+
+    for next_room in graph.get(room, []):
+        if next_room not in visited:
+            dfs(next_room, sensors, visited, path + [room])
+
+# Triggered sensors
+triggered_sensors = ['bathroom', 'office']
+
+# Start the DFS from the entrance
+start_room = 'entrance'
+visited_rooms = set()
+print(f"Starting DFS from {start_room}:")
+dfs(start_room, triggered_sensors, visited_rooms, [])
