@@ -1,0 +1,43 @@
+import random
+
+# Function to generate a random path
+def generate_random_path(rooms):
+    return random.sample(rooms, len(rooms))
+
+# Function to evaluate fitness (number of triggered sensors)
+def evaluate_fitness(path, sensors):
+    return len(set(path).intersection(sensors))
+
+def genetic_algorithm(rooms, sensors, population_size=10, generations=5):
+    population = [generate_random_path(rooms) for _ in range(population_size)]
+
+    for gen in range(generations):
+        # Evaluate fitness for each path
+        fitness = [evaluate_fitness(path, sensors) for path in population]
+
+        # Select best paths
+        sorted_population = [x for _, x in sorted(zip(fitness, population), reverse=True)]
+        elite = sorted_population[:2]  # Elite paths to survive
+
+        # Crossover and mutation to generate new paths
+        new_population = elite[:]
+        while len(new_population) < population_size:
+            parent1, parent2 = random.sample(elite, 2)
+            crossover_point = random.randint(1, len(rooms) - 1)
+            child = parent1[:crossover_point] + parent2[crossover_point:]
+            # Apply mutation
+            mutation_point = random.randint(0, len(rooms) - 1)
+            child[mutation_point] = random.choice(rooms)
+            new_population.append(child)
+
+        population = new_population
+
+    best_path = max(population, key=lambda x: evaluate_fitness(x, sensors))
+    print(f"Best path found: {best_path}, Fitness: {evaluate_fitness(best_path, sensors)}")
+
+# Rooms and triggered sensors
+rooms = ['entrance', 'kitchen', 'living_room', 'bedroom', 'bathroom', 'office']
+triggered_sensors = ['bathroom', 'office']
+
+# Apply genetic algorithm
+genetic_algorithm(rooms, triggered_sensors)
