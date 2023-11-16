@@ -1,0 +1,67 @@
+import random
+
+# Define the graph representing room connections
+graph = {
+    'entrance': ['kitchen'],
+    'kitchen': ['living_room', 'bedroom'],
+    'living_room': ['bathroom'],
+    'bedroom': ['office'],
+    'bathroom': [],
+    'office': []
+}
+
+# Heuristic function for ACO
+heuristic = {
+    'entrance': 5,
+    'kitchen': 4,
+    'living_room': 3,
+    'bedroom': 2,
+    'bathroom': 1,
+    'office': 0
+}
+
+def aco(rooms, sensors, num_ants=5, evaporation_rate=0.1, alpha=1.0, beta=2.0, iterations=5):
+    pheromone = {room: {neighbor: 1.0 for neighbor in graph[room]} for room in rooms}
+
+    for _ in range(iterations):
+        for ant in range(num_ants):
+            current_room = 'entrance'
+            path = [current_room]
+
+            while current_room not in sensors:
+                neighbors = graph[current_room]
+                probabilities = [(neighbor, (pheromone[current_room][neighbor] ** alpha) * (heuristic[neighbor] ** beta)) for neighbor in neighbors]
+                total_prob = sum(prob for _, prob in probabilities)
+                probabilities = [(neighbor, prob / total_prob) for neighbor, prob in probabilities]
+
+                selected_neighbor = None
+                rand = random.uniform(0, 1)
+                cumulative_prob = 0.0
+
+                for neighbor, prob in probabilities:
+                    cumulative_prob += prob
+                    if rand <= cumulative_prob:
+                        selected_neighbor = neighbor
+                        break
+
+                path.append(selected_neighbor)
+                current_room = selected_neighbor
+
+            # Update pheromone levels
+            for i in range(len(path) - 1):
+                pheromone[path[i]][path[i+1]] += 1.0
+
+            # Evaporate pheromones
+            for room in rooms:
+                for neighbor in graph[room]:
+                    pheromone[room][neighbor] *= (1 - evaporation_rate)
+
+    best_path = max(pheromone, key=lambda room: heuristic[room])
+    print(f"Best path found by ACO: {best_path}")
+
+# Rooms and triggered sensors
+rooms = ['entrance', 'kitchen', 'living_room', 'bedroom', 'bathroom', 'office']
+triggered_sensors = ['bathroom', 'office']
+
+# Apply Ant Colony Optimization
+aco(rooms, triggered_sensors)
