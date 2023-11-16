@@ -1,0 +1,56 @@
+import random
+
+# Define the graph representing room connections
+graph = {
+    'entrance': ['kitchen'],
+    'kitchen': ['living_room', 'bedroom'],
+    'living_room': ['bathroom'],
+    'bedroom': ['office'],
+    'bathroom': [],
+    'office': []
+}
+
+# Heuristic function for PSO
+heuristic = {
+    'entrance': 5,
+    'kitchen': 4,
+    'living_room': 3,
+    'bedroom': 2,
+    'bathroom': 1,
+    'office': 0
+}
+
+def fitness_function(path, sensors):
+    return len(set(path).intersection(sensors))
+
+def particle_swarm_optimization(rooms, sensors, swarm_size=10, iterations=5, inertia=0.5, cognitive_factor=1.5, social_factor=1.5):
+    global_best_path = None
+    global_best_fitness = float('-inf')
+
+    # Initialize particles
+    particles = [{'position': random.sample(rooms, len(rooms)), 'velocity': [0] * len(rooms)} for _ in range(swarm_size)]
+
+    for _ in range(iterations):
+        for particle in particles:
+            current_path = particle['position']
+            fitness = fitness_function(current_path, sensors)
+
+            if fitness > global_best_fitness:
+                global_best_fitness = fitness
+                global_best_path = current_path
+
+            for i in range(len(current_path)):
+                if random.uniform(0, 1) > inertia:
+                    cognitive = cognitive_factor * random.uniform(0, 1) * (current_path[i] - particle['position'][i])
+                    social = social_factor * random.uniform(0, 1) * (global_best_path[i] - particle['position'][i])
+                    particle['velocity'][i] += cognitive + social
+                    particle['position'][i] += particle['velocity'][i]
+
+    print(f"Best path found by PSO: {global_best_path}, Fitness: {global_best_fitness}")
+
+# Rooms and triggered sensors
+rooms = ['entrance', 'kitchen', 'living_room', 'bedroom', 'bathroom', 'office']
+triggered_sensors = ['bathroom', 'office']
+
+# Apply Particle Swarm Optimization
+particle_swarm_optimization(rooms, triggered_sensors)
