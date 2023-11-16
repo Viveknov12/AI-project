@@ -1,0 +1,36 @@
+from collections import deque
+
+# Assuming a graph representing room connections
+graph = {
+    'entrance': ['kitchen'],
+    'kitchen': ['living_room', 'bedroom'],
+    'living_room': ['bathroom'],
+    'bedroom': ['office'],
+    'bathroom': [],
+    'office': []
+}
+
+def bfs(start, sensors):
+    visited = set()
+    queue = deque([(start, [])])
+
+    while queue:
+        room, path = queue.popleft()
+
+        if room in sensors:
+            print(f"Sensor triggered in {room}, path taken: {path + [room]}")
+
+        if room not in visited:
+            visited.add(room)
+
+            for next_room in graph.get(room, []):
+                if next_room not in visited:
+                    queue.append((next_room, path + [room]))
+
+# Triggered sensors
+triggered_sensors = ['bathroom', 'office']
+
+# Start the BFS from the entrance
+start_room = 'entrance'
+print(f"Starting BFS from {start_room}:")
+bfs(start_room, triggered_sensors)
