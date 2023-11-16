@@ -1,0 +1,77 @@
+import tkinter as tk
+
+# Define the graph representing room connections
+graph = {
+    'entrance': ['kitchen'],
+    'kitchen': ['living_room', 'bedroom'],
+    'living_room': ['bathroom'],
+    'bedroom': ['office'],
+    'bathroom': [],
+    'office': []
+}
+
+# ... (Existing functions and data structures)
+
+# Function to display the triggered path in the GUI
+def display_path(path_taken):
+    # Logic to visualize the path in the GUI
+    for i in range(len(path_taken) - 1):
+        current_room = path_taken[i]
+        next_room = path_taken[i + 1]
+        canvas.itemconfig(connections[current_room][next_room], fill='red')
+
+# Function to handle GUI button click event
+def find_path():
+    # Trigger search algorithms
+    # Modify this section to display the results in the GUI
+    bfs(start_room, triggered_sensors)
+    dfs(start_room, triggered_sensors, set(), [])
+    astar(start_room, triggered_sensors)
+    particle_swarm_optimization(rooms, triggered_sensors)
+    ant_colony_optimization(rooms, triggered_sensors)
+    # Example: Display the triggered path in the GUI
+    display_path(['entrance', 'kitchen', 'living_room', 'bathroom'])
+
+# Create a GUI with room connections visualized
+def create_gui():
+    root = tk.Tk()
+    root.title("Smart Home Security System")
+    
+    canvas = tk.Canvas(root, width=400, height=300)
+    canvas.pack()
+
+    # Visualize room connections
+    connections = {}
+    for room in graph:
+        connections[room] = {}
+        for neighbor in graph[room]:
+            x1, y1 = room_coordinates[room]
+            x2, y2 = room_coordinates[neighbor]
+            connections[room][neighbor] = canvas.create_line(x1, y1, x2, y2, fill='black', width=2)
+
+    find_path_button = tk.Button(root, text="Find Path", command=find_path)
+    find_path_button.pack()
+
+    root.mainloop()
+
+# Room coordinates for visualization
+room_coordinates = {
+    'entrance': (100, 50),
+    'kitchen': (200, 50),
+    'living_room': (200, 150),
+    'bedroom': (300, 50),
+    'bathroom': (200, 250),
+    'office': (300, 150)
+}
+
+# Triggered sensors
+triggered_sensors = ['bathroom', 'office']
+
+# Start the search algorithms from the entrance
+start_room = 'entrance'
+
+# Rooms
+rooms = ['entrance', 'kitchen', 'living_room', 'bedroom', 'bathroom', 'office']
+
+# Run the GUI
+create_gui()
