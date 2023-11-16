@@ -1,0 +1,143 @@
+from collections import deque
+import heapq
+import random
+
+# Define the graph representing room connections
+graph = {
+    'entrance': ['kitchen'],
+    'kitchen': ['living_room', 'bedroom'],
+    'living_room': ['bathroom'],
+    'bedroom': ['office'],
+    'bathroom': [],
+    'office': []
+}
+
+# Heuristic function for A*
+heuristic = {
+    'entrance': 5,
+    'kitchen': 4,
+    'living_room': 3,
+    'bedroom': 2,
+    'bathroom': 1,
+    'office': 0
+}
+
+def bfs(start, sensors):
+    visited = set()
+    queue = deque([(start, [])])
+
+    while queue:
+        room, path = queue.popleft()
+
+        if room in sensors:
+            print(f"BFS: Sensor triggered in {room}, path taken: {path + [room]}")
+
+        if room not in visited:
+            visited.add(room)
+
+            for next_room in graph.get(room, []):
+                if next_room not in visited:
+                    queue.append((next_room, path + [room]))
+
+def dfs(room, sensors, visited, path):
+    if room in sensors:
+        print(f"DFS: Sensor triggered in {room}, path taken: {path + [room]}")
+    
+    visited.add(room)
+
+    for next_room in graph.get(room, []):
+        if next_room not in visited:
+            dfs(next_room, sensors, visited, path + [room])
+
+def astar(start, sensors):
+    open_set = []
+    closed_set = set()
+    heapq.heappush(open_set, (heuristic[start], start, []))
+
+    while open_set:
+        _, room, path = heapq.heappop(open_set)
+
+        if room in sensors:
+            print(f"A*: Sensor triggered in {room}, path taken: {path + [room]}")
+            return
+
+        if room not in closed_set:
+            closed_set.add(room)
+
+            for next_room in graph.get(room, []):
+                if next_room not in closed_set:
+                    heapq.heappush(open_set, (heuristic[next_room], next_room, path + [room]))
+
+def fitness_function(path, sensors):
+    return len(set(path).intersection(sensors))
+
+def particle_swarm_optimization(rooms, sensors, swarm_size=10, iterations=5, inertia=0.5, cognitive_factor=1.5, social_factor=1.5):
+    global_best_path = None
+    global_best_fitness = float('-inf')
+
+    for _ in range(iterations):
+        for _ in range(swarm_size):
+            current_path = random.sample(rooms, len(rooms))
+            fitness = fitness_function(current_path, sensors)
+
+            if fitness > global_best_fitness:
+                global_best_fitness = fitness
+                global_best_path = current_path
+
+    print(f"Best path found by PSO: {global_best_path}, Fitness: {global_best_fitness}")
+
+def ant_colony_optimization(rooms, sensors, num_ants=5, evaporation_rate=0.1, alpha=1.0, beta=2.0, iterations=5):
+    pheromone = {room: {neighbor: 1.0 for neighbor in graph[room]} for room in rooms}
+
+    for _ in range(iterations):
+        for ant in range(num_ants):
+            current_room = 'entrance'
+            path = [current_room]
+
+            while current_room not in sensors:
+                neighbors = graph[current_room]
+                probabilities = [(neighbor, (pheromone[current_room][neighbor] ** alpha) * (heuristic[neighbor] ** beta)) for neighbor in neighbors]
+                total_prob = sum(prob for _, prob in probabilities)
+                probabilities = [(neighbor, prob / total_prob) for neighbor, prob in probabilities]
+
+                selected_neighbor = None
+                rand = random.uniform(0, 1)
+                cumulative_prob = 0.0
+
+                for neighbor, prob in probabilities:
+                    cumulative_prob += prob
+                    if rand <= cumulative_prob:
+                        selected_neighbor = neighbor
+                        break
+
+                path.append(selected_neighbor)
+                current_room = selected_neighbor
+
+            # Update pheromone levels
+            for i in range(len(path) - 1):
+                pheromone[path[i]][path[i+1]] += 1.0
+
+            # Evaporate pheromones
+            for room in rooms:
+                for neighbor in graph[room]:
+                    pheromone[room][neighbor] *= (1 - evaporation_rate)
+
+    best_path = max(pheromone, key=lambda room: heuristic[room])
+    print(f"Best path found by ACO: {best_path}")
+
+# Triggered sensors
+triggered_sensors = ['bathroom', 'office']
+
+# Start the search algorithms from the entrance
+start_room = 'entrance'
+print(f"Starting search algorithms from {start_room}:")
+bfs(start_room, triggered_sensors)
+dfs(start_room, triggered_sensors, set(), [])
+astar(start_room, triggered_sensors)
+
+# Apply Particle Swarm Optimization
+rooms = ['entrance', 'kitchen', 'living_room', 'bedroom', 'bathroom', 'office']
+particle_swarm_optimization(rooms, triggered_sensors)
+
+# Apply Ant Colony Optimization
+ant_colony_optimization(rooms, triggered_sensors)
