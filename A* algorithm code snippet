@@ -1,0 +1,36 @@
+# Assuming a heuristic function for A* based on the distance to sensors
+heuristic = {
+    'entrance': 5,
+    'kitchen': 4,
+    'living_room': 3,
+    'bedroom': 2,
+    'bathroom': 1,
+    'office': 0
+}
+
+def astar(start, sensors):
+    open_set = []
+    closed_set = set()
+    heapq.heappush(open_set, (heuristic[start], start, []))
+
+    while open_set:
+        _, room, path = heapq.heappop(open_set)
+
+        if room in sensors:
+            print(f"Sensor triggered in {room}, path taken: {path + [room]}")
+            return
+
+        if room not in closed_set:
+            closed_set.add(room)
+
+            for next_room in graph.get(room, []):
+                if next_room not in closed_set:
+                    heapq.heappush(open_set, (heuristic[next_room], next_room, path + [room]))
+
+# Triggered sensors
+triggered_sensors = ['bathroom', 'office']
+
+# Start the A* from the entrance
+start_room = 'entrance'
+print(f"Starting A* from {start_room}:")
+astar(start_room, triggered_sensors)
